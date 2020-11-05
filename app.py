@@ -8,7 +8,7 @@ from item import Item
 
 
 app = Flask(__name__)
-app.secret_key = 'its very secret'
+app.secret_key = 'secret'
 api = Api(app)
 
 jwt = JWT(app, authenticate, identity)
@@ -19,5 +19,5 @@ api.add_resource(Item, '/item/<string:name>')
 api.add_resource(UserRegister, '/register')
 
 
-
-app.run(port=5000, debug=True)
+if __name__ == "__main__":
+    app.run(port=5000, debug=True)

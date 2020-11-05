@@ -14,6 +14,13 @@ class Item(Resource):
 
     @jwt_required()
     def get(self, name):
+        item = self.find_by_name(name)
+        if item:
+            return item
+        return {'message': 'Item not found.'}, 400
+
+    @classmethod
+    def find_by_name(cls,name):
         connection = sqlite3.connect('data.db')
         cursor = connection.cursor()
 
@@ -23,20 +30,36 @@ class Item(Resource):
         cursor.close()
         if row:
             return {'item':{'name':row[0], 'price':row[1]}}, 200
-        return {'message': 'Item not found.'}, 400
 
-#     def post(self, name):
-#         if next(filter(lambda list_items : list_items['name'] == name, items), None):
-#             return {'msg':f"item with name {name} already exists."}, 400
-#         data = Item.parser.parse_args()
-#         item = {'name':name, 'price':data['price']}
-#         items.append(item)
-#         return item, 201
+    def post(self, name):
+        item = self.find_by_name(name)
+        if item:
+            return {'message':'item with name "{}" already exists.'.format(name)}
+        data = Item.parser.parse_args()
+        item = {'name':name, 'price':data['price']}
+
+        connection = sqlite3.connect('data.db')
+        cursor = connection.cursor()
+
+        insert_query = "INSERT INTO items VALUES(?,?)"
+        cursor.execute(insert_query,(item['name'],item['price']))
+
+        connection.commit()
+        connection.close()
+
+        return item, 201
     
-#     def delete(self, name):
-#         global items
-#         items = list(filter(lambda item: item['name'] != name, items))
-#         return {'message': 'item deleted'}, 200
+    def delete(self, name):
+        connection = sqlite3.connect('data.db')
+        cursor = connection.cursor()
+
+        delete_query = "DELETE FROM items WHERE name = ?"
+        cursor.execute(delete_query,(name,))
+
+        connection.commit()
+        connection.close()
+
+        return {'message':'Item deleted.'}, 200
 
 #     def put(self, name):
 #         data = Item.parser.parse_args()

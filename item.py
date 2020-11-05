@@ -45,7 +45,7 @@ class Item(Resource):
     def post(self, name):
         item = self.find_by_name(name)
         if item:
-            return {'message':'item with name "{}" already exists.'.format(name)}
+            return {'message':'item with name {} already exists.'.format(name)}
         data = Item.parser.parse_args()
         item = {'name':name, 'price':data['price']}
         try:
@@ -88,15 +88,24 @@ class Item(Resource):
         connection = sqlite3.connect('data.db')
         cursor = connection.cursor()
 
-        insert_query = "UPDATE items SET price = ? WHERE name = ?"
-        cursor.execute(insert_query,(item['price'],item['name']))
+        update_query = "UPDATE items SET price = ? WHERE name = ?"
+        cursor.execute(update_query,(item['price'],item['name']))
 
         connection.commit()
         connection.close()
 
-# class ItemList(Resource):
+class ItemList(Resource):
 
-#     def get(self):
-#         if len(items) == 0:
-#             return {'items':None}, 404
-#         return {'items':items}, 200
+    def get(self):
+        connection = sqlite3.connect('data.db')
+        cursor = connection.cursor()
+
+        get_query = "SELECT * FROM items"
+        result = cursor.execute(get_query)
+
+        items = [{'name':item[0], 'price':item[1]} for item in result]
+
+        connection.commit()
+        connection.close()
+
+        return {'items':items}, 200

@@ -22,46 +22,37 @@ class Item(Resource):
 
     
     def post(self, name):
-        item = ItemModel.find_by_name(name)
-        if item:
+        if ItemModel.find_by_name(name):
             return {'message':'item with name {} already exists.'.format(name)}
 
         data = Item.parser.parse_args()
+
         item = ItemModel(name, data['price'])
         try:
-            item.insert()
+            item.save_to_db()
         except:
-            return {'message':'AN error occoured in inserting item.'}, 500 # internal server error
+            return {'message':'An error occoured in inserting item.'}, 500 # internal server error
 
-        return item, 201
+        return item.json(), 201
     
     def delete(self, name):
-        connection = sqlite3.connect('data.db')
-        cursor = connection.cursor()
-
-        delete_query = "DELETE FROM items WHERE name = ?"
-        cursor.execute(delete_query,(name,))
-
-        connection.commit()
-        connection.close()
-
+        item = ItemModel.find_by_name(name)
+        if item:
+            item.delete_from_db()
         return {'message':'Item deleted.'}, 200
 
     def put(self, name):
         data = Item.parser.parse_args()
+
         item = ItemModel.find_by_name(name)
-        updated_item = ItemModel(name, data['price'])
+        
         if item is None:
-            try:
-               updated_item.insert()
-            except:
-                return {'message':'AN error occoured in inserting item.'}, 500 # internal server error
+            item = ItemModel(name, data['price'])
         else:
-            try:
-                updated_item.update()
-            except:
-                return {'message':'AN error occoured in updating item.'}, 500 # internal server error
-        return updated_item.json(), 200
+            item.price = data['price']
+        
+        item.save_to_db()
+        return item.json(), 200
 
     
 

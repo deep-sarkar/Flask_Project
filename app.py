@@ -4,7 +4,7 @@ from flask_jwt import JWT
 
 from security import identity, authenticate
 from user import UserRegister
-from item import Item
+from item import Item, ItemList
 
 
 app = Flask(__name__)
@@ -15,7 +15,7 @@ jwt = JWT(app, authenticate, identity)
 
 
 api.add_resource(Item, '/item/<string:name>')
-# api.add_resource(ItemList, '/items')
+api.add_resource(ItemList, '/items')
 api.add_resource(UserRegister, '/register')
 
 

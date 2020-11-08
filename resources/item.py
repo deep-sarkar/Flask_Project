@@ -59,15 +59,5 @@ class Item(Resource):
 class ItemList(Resource):
 
     def get(self):
-        connection = sqlite3.connect('data.db')
-        cursor = connection.cursor()
-
-        get_query = "SELECT * FROM items"
-        result = cursor.execute(get_query)
-
-        items = [{'name':item[0], 'price':item[1]} for item in result]
-
-        connection.commit()
-        connection.close()
-
+        items = [item.json() for item in ItemModel.query.all()]
         return {'items':items}, 200
